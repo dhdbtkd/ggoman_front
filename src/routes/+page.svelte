@@ -25,7 +25,9 @@
         const day_difference = Math.floor(differenceInDays);
         today_number = standard.number+day_difference;
         
-        socket = io("ws://localhost:8001")
+
+        socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app")
+        // socket = io("ws://localhost:3000")
 
         socket.on("connect", () => {
             if (socket.recovered) {
