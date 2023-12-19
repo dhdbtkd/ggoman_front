@@ -16,14 +16,27 @@
     let current_guess;
     let last_guess;
     let guess_list = [];
+    let name_input;
     let user_list = [];
     let guess_input;
+    let waiting = false;
     let invalid_text = false;
     $: {
         user_list = [...user_list];
         console.log(user_list);
     }
+    const add_user = (user_object) => {
+        const find_user = user_list.find((user)=>{
+            return user.socket_id == user_object.socket_id
+        })
+        if(find_user){
+            find_user.name = user_object.name;
+        } else {
+            users.push(user_object)
+        }
+    }
     onMount(()=>{
+        name_input.focus(); //닉네임 input에 포커스
         const differenceInMilliseconds = new Date().getTime() - standard.date.getTime();
         const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
         console.log(Math.floor(differenceInDays));
@@ -60,7 +73,7 @@
         });
         socket.on("user_list", (list)=>{
             if(list.length>0){
-                user_list = [...user_list, list];
+                user_list = [...user_list, ...list];
             }
         })
 
@@ -93,9 +106,9 @@
         socket.on("hello", (arg) => {
             console.log(arg); // world
         });
-        socket.on("new_member",(arg)=>{
-            console.log("새로운 친구 ", arg);
-            user_list.push(arg);
+        socket.on("new_member",(user_object)=>{
+            console.log("새로운 친구 ", user_object);
+            add_user(user_object);
             user_list = [...user_list];
         })
         socket.on("user_rejoin",(arg)=>{
@@ -113,6 +126,10 @@
     })
     
     const name_submit=()=>{
+        if(!name){
+            alert("닉네임 입력 안했잖아")
+            return;
+        }
         socket.emit('name_submit', name);
         window.localStorage.setItem('name', name);
         user_list.push({
@@ -140,6 +157,7 @@
         });
     }
     const submit_guess = async () => {
+        if(!guess) return;
         const is_duplicate = is_duplicate_guess();
         if(is_duplicate){
             const find = guess_list.find((guess2)=>{
@@ -148,6 +166,7 @@
             current_guess = find;
         } else {
             last_guess = guess;
+            waiting = true;
             const url = `/api/guess?guess=${guess}&number=${today_number}`;
             const result = await fetch(url)
             .then((res)=>{
@@ -156,6 +175,7 @@
             .then((json)=>json)
             
             console.log("🚀 ~ file: +page.svelte:149 ~ constsubmit_guess= ~ result:", result)
+            waiting = false;
             if(result.guess){
                 result.number = today_number;
                 result.name = name;
@@ -221,16 +241,28 @@
 
 </script>
 {#if step == 0}
-<div class="w-full h-[100dvh] flex flex-col p-4 bg-zinc-900 text-zinc-100">
+<div class="w-full h-[100dvh] flex flex-col justify-center items-center p-4 bg-zinc-900 text-zinc-100">
+    <div class="mb-16 font_test">
+        <div class="text-lg">
+            웰컴 투
+        </div>
+        <div class="font-bold text-2xl">
+            다함께 꼬맨틀
+        </div>
+    </div>
     <div>
-        닉네임 뭐할거야
+        닉네임 뭐 할거야
     </div>
-    <div class="mb-6">
-        <label for="large-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">이름</label>
-        <input maxlength="8" type="text" on:keydown={keydown} bind:value={name} class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-    </div>
-    <div class="">
-        <button on:click={name_submit}  class="bg-zinc-800 text-white rounded-lg w-full py-4"> Submit </button>
+    <div class="w-2/3">
+        <div class="mb-6">
+            <label for="large-input" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">이름</label>
+            <input bind:this={name_input} maxlength="8" type="text" on:keydown={keydown} bind:value={name} class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        </div>
+        <div class="">
+            {#if name}
+            <button on:click={name_submit} class="bg-zinc-800 text-white rounded-lg w-full py-4"> 입장!🤸 </button>
+            {/if}
+        </div>
     </div>
 </div>
 
@@ -294,7 +326,17 @@
         <input placeholder="단어를 입력하세요." bind:this={guess_input} type="text" on:keydown={keydown} bind:value={guess} class="block w-full p-3 border bg-zinc-800 border-zinc-600 text-sm rounded-lg =">
     </div>
     <div class="mb-6">
-        <button on:click={submit_guess} class="bg-zinc-600 rounded-lg w-full py-4"> 이건가!? </button>
+        <button on:click={submit_guess} class={waiting?"flex justify-center items-center bg-zinc-800 text-zinc-300 rounded-lg w-full py-3":"flex justify-center items-center bg-zinc-600 rounded-lg w-full py-3"} disabled={waiting}>
+            {#if waiting}
+            <svg  aria-hidden="true" class="mr-2 w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+            </svg>
+            맞춰보는중...
+            {:else}
+            <Icon class="text-lg mr-2" icon="grommet-icons:send" /> 제출
+            {/if}
+        </button>
     </div>
     <div>
         목록
@@ -330,7 +372,7 @@
                 </div>
 
             </div>
-            <div class="text-blue-600 font-bold">
+            <div class="text-[#ffc2d1] font-bold">
                 {current_guess.guess}
             </div>
             <div>
@@ -339,35 +381,35 @@
             <div>
                 {#if current_guess.rank < 1000 && current_guess.rank > 500}
                 <span class="font-bold">
-                    {current_guess.rank}
+                    {current_guess.rank} 😏
                 </span>
                 {:else if current_guess.rank < 501 && current_guess.rank > 250}
                 <span class="font-bold text-[#ffe5ec]">
-                    {current_guess.rank}
+                    {current_guess.rank} 🙃
                 </span>
                 {:else if current_guess.rank < 251 && current_guess.rank > 100}
                 <span class="font-bold text-[#ffc2d1]">
-                    {current_guess.rank}
+                    {current_guess.rank} 😋
                 </span>
                 {:else if current_guess.rank < 101 && current_guess.rank > 50}
                 <span class="font-bold text-[#ffb3c6]">
-                    {current_guess.rank}
+                    {current_guess.rank} 😁
                 </span>
                 {:else if current_guess.rank < 51 && current_guess.rank > 10}
                 <span class="font-bold text-[#ff8fab] text-base">
-                    {current_guess.rank}
+                    {current_guess.rank} 😝
                 </span>
                 {:else if current_guess.rank < 11 && current_guess.rank > 0}
                 <span class="font-bold text-[#fb6f92] text-base">
-                    {current_guess.rank}
+                    {current_guess.rank} 🤩
                 </span>
                 {:else if current_guess.rank.includes("정답")}
                 <span class="font-bold text-[#fb6f92] text-lg">
-                    {current_guess.rank}
+                    {current_guess.rank} 🥳
                 </span>
                 {:else}
                 <span class="text-zinc-400 text-xs">
-                    {current_guess.rank}
+                    {current_guess.rank} 😭
                 </span>
                 {/if}
             </div>
@@ -419,7 +461,7 @@
                 </span>
                 {:else if guess.rank.includes("정답")}
                 <span class="font-bold text-[#fb6f92] text-lg">
-                    {guess.rank}
+                    {guess.rank} 🥳
                 </span>
                 {:else}
                 <span class="text-zinc-400 text-xs">
@@ -434,3 +476,9 @@
 </div>
 
 {/if}
+
+<style>
+    .font_test {
+        font-family: 'S-CoreDream-3Light';
+    }
+</style>
