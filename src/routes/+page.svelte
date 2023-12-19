@@ -277,7 +277,7 @@
             변경
         </div>
     </div>
-    <div class="flex flex-col justify-center items-center my-8">
+    <div class="flex flex-col justify-center items-center mb-6 mt-5">
         <div class="text-2xl font-bold mb-4">
             다함께 꼬맨틀
         </div>
@@ -297,19 +297,19 @@
         
     </div>
     <div class="flex flex-col text-xs">
-        <div class="mb-3">
+        <div class="mb-2">
             지금 접속중인 친구
         </div>
         <div class="flex flex-wrap">
             {#each user_list as user,index(index)}
             <!-- {@debug user_list} -->
             {#if user.socket_id == socket.id}
-            <div class="rounded-full text-sm px-3 py-1 mx-3 bg-zinc-500 my-1">
+            <div class="rounded-full text-sm px-3 py-1 mx-2 bg-zinc-500 my-1">
                 it's me {user.name}
             </div>
             
             {:else}
-            <div class="rounded-full text-sm px-3 py-1 mx-3 bg-zinc-700 my-1">
+            <div class="rounded-full text-sm px-3 py-1 mx-2 bg-zinc-700 my-1">
                 {user.name}
             </div>
 
@@ -317,7 +317,7 @@
             {/each}
         </div>
     </div>
-    <div class="my-4">
+    <div class="my-3">
         {#if invalid_text}
             <div class="font-bold text-rose-500 my-2 text-sm">
                 '{last_guess}'는 알 수 없는 단어래😒
