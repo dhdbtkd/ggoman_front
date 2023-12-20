@@ -21,6 +21,10 @@
     let guess_input;
     let waiting = false;
     let invalid_text = false;
+    let top_player = {
+        socket_id : '',
+        name : ''
+    }
     $: {
         user_list = [...user_list];
         console.log(user_list);
@@ -120,11 +124,22 @@
             guess_list = [...guess_list, arg];
             sort_array(guess_list);
             console.log("🚀 ~ file: +page.svelte:31 ~ socket.on ~ arg:", arg)
+            find_top_player(guess_list, 'sim');
         })
-
-        
     })
-    
+    const find_top_player = (array, key) => {
+        if (array.length === 0) {
+            return null; 
+        }
+        const result =  array.reduce((maxObject, currentObject) => {
+            const maxKeyValue = maxObject[key];
+            const currentKeyValue = currentObject[key];
+
+            return (currentKeyValue > maxKeyValue) ? currentObject : maxObject;
+        });
+        top_player.socket_id = result.socket_id;
+        top_player.name = result.name;
+    }
     const name_submit=()=>{
         if(!name){
             alert("닉네임 입력 안했잖아")
@@ -179,6 +194,7 @@
             if(result.guess){
                 result.number = today_number;
                 result.name = name;
+                result.socket_id = socket.id;
                 result.count = guess_list.length+1;
                 current_guess = result;
                 guess_list.push(result);
@@ -186,6 +202,7 @@
                 sort_array(guess_list);
                 socket.emit("guess_result_to_server", result);
                 invalid_text = false;
+                find_top_player(guess_list, "sim");
             } else {
                 //에러일 경우->알수없는 단어
                 invalid_text = true;
@@ -219,21 +236,21 @@
     const guess_text_dynamic_class = (rank)=>{
         let class_text;
         if(rank > 500 && rank <1000){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else if(rank > 250 && rank <501){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else if(rank > 100 && rank <251){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else if(rank > 50 && rank <101){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else if(rank > 10 && rank <51){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else if(rank > 0 && rank <11){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else if(rank == "정답!"){
-            class_text = "grid grid-cols-4 gap-2";
+            class_text = "grid grid-cols-5 gap-2";
         } else {
-            class_text = "grid grid-cols-4 gap-2 text-xs text-zinc-400";
+            class_text = "grid grid-cols-5 gap-2 text-xs text-zinc-400";
         }
         
         return class_text;
@@ -298,18 +315,18 @@
     </div>
     <div class="flex flex-col text-xs">
         <div class="mb-2">
-            지금 접속중인 친구
+            접속중인 친구
         </div>
         <div class="flex flex-wrap">
             {#each user_list as user,index(index)}
             <!-- {@debug user_list} -->
             {#if user.socket_id == socket.id}
-            <div class="rounded-full text-sm px-3 py-1 mx-2 bg-zinc-500 my-1">
+            <div class="rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
                 it's me {user.name}
             </div>
             
             {:else}
-            <div class="rounded-full text-sm px-3 py-1 mx-2 bg-zinc-700 my-1">
+            <div class="rounded-full text-xs px-3 py-1 mx-1 bg-zinc-700 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
                 {user.name}
             </div>
 
@@ -339,11 +356,11 @@
         </button>
     </div>
     <div>
-        목록
+        
     </div>
-    <div class="border-b pb-3 border-gray-100 text-sm">
-        <div class="grid grid-cols-4 gap-2 my-2">
-            <div class="flex">
+    <div class="border-b pb-2 mb-2 border-gray-100 text-sm">
+        <div class="grid grid-cols-5 gap-2 my-2">
+            <div class="flex col-span-2">
                 <div class="mr-2 w-5">
                     #
                 </div>
@@ -362,8 +379,8 @@
             </div>
         </div>
         {#if current_guess}
-        <div class="grid grid-cols-4 gap-2">
-            <div class="flex">
+        <div class="grid grid-cols-5 gap-2">
+            <div class="flex col-span-2">
                 <div class="mr-2 w-5">
                     {current_guess.count}
                 </div>
@@ -419,7 +436,7 @@
     <div class="text-sm overflow-y-scroll">
         {#each guess_list as guess, index (index)}
         <div class={guess_text_dynamic_class(guess.rank)}>
-            <div class="flex">
+            <div class="flex col-span-2">
                 <div class="mr-2 w-5">
                     {guess.count}
                 </div>
@@ -480,5 +497,10 @@
 <style>
     .font_test {
         font-family: 'S-CoreDream-3Light';
+    }
+    .crowned-text::before {
+        content: "👑"; /* 왕관(👑) emoji를 추가하는 부분 */
+        display: inline-block;
+        margin-right: 5px; /* 왕관과 텍스트 사이의 간격을 조절할 수 있습니다. */
     }
 </style>
