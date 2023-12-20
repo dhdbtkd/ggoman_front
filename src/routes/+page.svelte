@@ -5,6 +5,8 @@
     import Icon from '@iconify/svelte';
     import {page} from "$app/stores";
     
+    export let data;
+
     
     console.log($page.url);
     console.log($page.url.pathname);
@@ -52,22 +54,35 @@
         }
         
     }
+    const get_today_similarity = ()=>{
+        
+    }
     let is_admin = false;
-    onMount(()=>{
-        is_admin = $page.url.searchParams.get('admin')=='true'?true:false;
-        name_input.focus(); //닉네임 input에 포커스
+    const get_today_number = ()=>{
         const differenceInMilliseconds = new Date().getTime() - standard.date.getTime();
         const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
         console.log(Math.floor(differenceInDays));
         const day_difference = Math.floor(differenceInDays);
         today_number = standard.number+day_difference;
-
-        socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
-            timeout : 50000
-        })
-        // socket = io("ws://localhost:3000",{
+    }
+    onMount(()=>{
+        is_admin = $page.url.searchParams.get('admin')=='true'?true:false;
+        name_input.focus(); //닉네임 input에 포커스
+        if(data.today_number){
+            today_number = data.today_number;
+        } else {
+            get_today_number();
+        }
+        setInterval(()=>{
+            console.log("i'am alive");
+            socket.emit("i_am_alive", name);
+        },10000)
+        // socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
         //     timeout : 50000
         // })
+        socket = io("ws://192.168.50.31:3000/",{
+            timeout : 50000
+        })
 
         socket.on("connect", () => {
             if (socket.recovered) {
@@ -94,6 +109,11 @@
                 }
             }
         });
+        //유저 생존 신고 받음
+        socket.on("he_is_alive", (user_object)=>{
+            console.log("he_is_alive", user_object);
+            add_user(user_object);
+        })
         socket.on("user_list", (list)=>{
             if(list.length>0){
                 user_list = [...user_list, ...list];
@@ -105,8 +125,7 @@
             const index = user_list.findIndex((user) => user.name == user_name.user_name);
             if (index !== -1) {
                 const removed_user = user_list.splice(index, 1)[0]; // Get the removed element
-                console.log(`Removed: ${removed_user}`);
-                console.log(`Remaining users: ${user_list}`);
+                console.log(`Removed: ${removed_user.name}`);
                 user_list = [...user_list];
             } else {
                 console.log(`Element "${user_name}" not found in array.`);
@@ -121,6 +140,8 @@
                 //유사도 정렬
                 sort_array(unique);
                 guess_list = [...unique];
+                console.log("🚀 ~ file: +page.svelte:138 ~ socket.on ~ guess_list:", guess_list)
+                find_top_player(guess_list, 'sim');
             }
         })
         socket.on("disconnect", () => {
@@ -356,12 +377,12 @@
             {#each user_list as user,index(index)}
             <!-- {@debug user_list} -->
             {#if user.socket_id == socket.id}
-            <div class="rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
+            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
                 it's me {user.name}
             </div>
             
             {:else}
-            <div class="rounded-full text-xs px-3 py-1 mx-1 bg-zinc-700 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
+            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-700 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
                 {user.name}
             </div>
 
@@ -460,9 +481,16 @@
                     {current_guess.rank} 🥳
                 </span>
                 {:else}
-                <span class="text-zinc-400 text-xs">
-                    {current_guess.rank} 😭
-                </span>
+                    {#if current_guess.sim>data.today_similarity.rest}
+                    <span class="text-zinc-400 text-xs">
+                        ????
+                    </span>
+                    {:else}
+                    <span class="text-zinc-400 text-xs">
+                        {current_guess.rank} 😭
+                    </span>
+                    {/if}
+                
                 {/if}
             </div>
         </div>
@@ -516,9 +544,15 @@
                     {guess.rank} 🥳
                 </span>
                 {:else}
-                <span class="text-zinc-400 text-xs">
-                    {guess.rank}
-                </span>
+                    {#if guess.sim>data.today_similarity.rest}
+                    <span class="text-zinc-400 text-xs">
+                        ????
+                    </span>
+                    {:else}
+                    <span class="text-zinc-400 text-xs">
+                        {guess.rank}
+                    </span>
+                    {/if}
                 {/if}
                 
             </div>
@@ -538,4 +572,21 @@
         display: inline-block;
         margin-right: 5px; /* 왕관과 텍스트 사이의 간격을 조절할 수 있습니다. */
     }
+
+    .crowned-text {
+        border: 0.25em solid transparent;
+        background-image: linear-gradient(rgb(63 63 70), rgb(63 63 70)), linear-gradient(120deg, #f09 0%, #0ff 50%, #9f0 100%);
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
+        border-radius: 1.8em;
+        background-size: 200% 100%;
+        animation: moveGradient 4s alternate infinite;
+    }
+
+    @keyframes moveGradient {
+        50% {
+            background-position: 100% 50%;
+        }
+    }
+    
 </style>
