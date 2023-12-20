@@ -66,8 +66,8 @@
             timeout : 50000
         })
         // socket = io("ws://localhost:3000",{
-            timeout : 50000
-        })
+        //     timeout : 50000
+        // })
 
         socket.on("connect", () => {
             if (socket.recovered) {
