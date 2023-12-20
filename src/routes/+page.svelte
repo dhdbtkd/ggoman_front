@@ -3,7 +3,11 @@
     import { onMount } from 'svelte';
     import _ from 'lodash';
     import Icon from '@iconify/svelte';
-
+    import {page} from "$app/stores";
+    
+    
+    console.log($page.url);
+    console.log($page.url.pathname);
     let step = 0;
     let standard = {
         date : new Date('2023-12-19T00:00:00'),
@@ -30,30 +34,45 @@
         console.log(user_list);
     }
     const add_user = (user_object) => {
-        const find_user = user_list.find((user)=>{
+        let find_user = user_list.find((user)=>{
             return user.socket_id == user_object.socket_id
         })
         if(find_user){
             find_user.name = user_object.name;
+            return;
         } else {
-            users.push(user_object)
+            find_user = user_list.find((user)=>{
+                return user.name == user_object.name
+            })
+            if(find_user){
+                return
+            } else {
+                user_list.push(user_object)
+            }
         }
+        
     }
+    let is_admin = false;
     onMount(()=>{
+        is_admin = $page.url.searchParams.get('admin')=='true'?true:false;
         name_input.focus(); //닉네임 input에 포커스
         const differenceInMilliseconds = new Date().getTime() - standard.date.getTime();
         const differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
         console.log(Math.floor(differenceInDays));
         const day_difference = Math.floor(differenceInDays);
         today_number = standard.number+day_difference;
-        
 
-        socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app")
-        // socket = io("ws://localhost:3000")
+        socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
+            timeout : 50000
+        })
+        // socket = io("ws://localhost:3000",{
+            timeout : 50000
+        })
 
         socket.on("connect", () => {
             if (socket.recovered) {
                 // any event missed during the disconnection period will be received now
+                console.log("this is recovered");
             } else {
                 console.log(socket.id); // x8WIv7-mJelg7on_ALbx
                 console.log(socket.connected);
@@ -67,7 +86,7 @@
                         socket_id : socket.id,
                         name : name
                     }
-                    user_list.push(push_item);
+                    add_user(push_item);
                     console.log("🚀 ~ file: +page.svelte:104 ~ onMount ~ push_item:", push_item)
                     console.log("localstorage에 name이 존재하므로 rejoin");
                     user_list = [...user_list];
@@ -94,7 +113,7 @@
             }
         })
         socket.on("return_history", (arg)=>{
-            console.log("return_history", arg);
+            console.log("return_history",   );
             if(arg.number == today_number){
                 guess_list = [...arg.data];
                 //중복 객체 제거
@@ -115,10 +134,14 @@
             add_user(user_object);
             user_list = [...user_list];
         })
-        socket.on("user_rejoin",(arg)=>{
-            console.log("🚀돌아온 친구", arg)
-            user_list.push(arg);
+        socket.on("user_rejoin",(user_object)=>{
+            console.log("🚀돌아온 친구", user_object)
+            add_user(user_object);
             user_list = [...user_list];
+        })
+        socket.on("clear",()=>{
+            console.log("clear");
+            guess_list = [];
         })
         socket.on("guess_result_from_server",(arg)=>{
             guess_list = [...guess_list, arg];
@@ -126,6 +149,9 @@
             console.log("🚀 ~ file: +page.svelte:31 ~ socket.on ~ arg:", arg)
             find_top_player(guess_list, 'sim');
         })
+        socket.on("disconnect", (reason) => {
+            console.log("🚀 ~ file: +page.svelte:143 ~ disconnect~ reason:", reason)
+        });
     })
     const find_top_player = (array, key) => {
         if (array.length === 0) {
@@ -140,6 +166,9 @@
         top_player.socket_id = result.socket_id;
         top_player.name = result.name;
     }
+    const reset_history = ()=>{
+        socket.emit('reset_history', true);
+    }
     const name_submit=()=>{
         if(!name){
             alert("닉네임 입력 안했잖아")
@@ -147,10 +176,11 @@
         }
         socket.emit('name_submit', name);
         window.localStorage.setItem('name', name);
-        user_list.push({
+        const user ={
             socket_id : socket.id,
             name : name
-        });
+        }
+        add_user(user);
         user_list = [...user_list];
         step++;
     }
@@ -294,6 +324,11 @@
             변경
         </div>
     </div>
+    {#if is_admin}
+    <div class="absolute top-3 right-3 bg-zinc-700 p-2 rounded-lg text-xs flex justify-center items-center" on:click={reset_history}>
+        RESET
+    </div>
+    {/if}
     <div class="flex flex-col justify-center items-center mb-6 mt-5">
         <div class="text-2xl font-bold mb-4">
             다함께 꼬맨틀
