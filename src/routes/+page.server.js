@@ -24,8 +24,8 @@ export async function load({ cookies, fetch }) {
         return json;
     })
     return {
-        today_number : today_number,
-        today_similarity : today_similarity
+        // today_number : today_number,
+        // today_similarity : today_similarity
     }
     // const loginCookie = cookies.get("session");
     // let loginValid;

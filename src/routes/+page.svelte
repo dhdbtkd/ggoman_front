@@ -69,11 +69,12 @@
     onMount(()=>{
         is_admin = $page.url.searchParams.get('admin')=='true'?true:false;
         name_input.focus(); //닉네임 input에 포커스
-        if(data.today_number){
-            today_number = data.today_number;
-        } else {
-            get_today_number();
-        }
+        // if(data.today_number){
+        //     today_number = data.today_number;
+        // } else {
+        //     get_today_number();
+        // }
+        get_today_number();
         setInterval(()=>{
             console.log("i'am alive");
             socket.emit("i_am_alive", name);
@@ -482,7 +483,7 @@
                     {current_guess.rank} 🥳
                 </span>
                 {:else}
-                    {#if current_guess.sim>data.today_similarity.rest}
+                    <!-- {#if current_guess.sim>data.today_similarity.rest}
                     <span class="text-zinc-400 text-xs">
                         ????
                     </span>
@@ -490,8 +491,10 @@
                     <span class="text-zinc-400 text-xs">
                         {current_guess.rank} 😭
                     </span>
-                    {/if}
-                
+                    {/if} -->
+                    <span class="text-zinc-400 text-xs">
+                        {current_guess.rank} 😭
+                    </span>
                 {/if}
             </div>
         </div>
@@ -545,7 +548,7 @@
                     {guess.rank} 🥳
                 </span>
                 {:else}
-                    {#if guess.sim>data.today_similarity.rest}
+                    <!-- {#if guess.sim>data.today_similarity.rest}
                     <span class="text-zinc-400 text-xs">
                         ????
                     </span>
@@ -553,8 +556,12 @@
                     <span class="text-zinc-400 text-xs">
                         {guess.rank}
                     </span>
-                    {/if}
+                    {/if} -->
+                    <span class="text-zinc-400 text-xs">
+                        {guess.rank}
+                    </span>
                 {/if}
+                
                 
             </div>
         </div>
