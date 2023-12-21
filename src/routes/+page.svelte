@@ -69,22 +69,22 @@
     onMount(()=>{
         is_admin = $page.url.searchParams.get('admin')=='true'?true:false;
         name_input.focus(); //닉네임 input에 포커스
-        // if(data.today_number){
-        //     today_number = data.today_number;
-        // } else {
-        //     get_today_number();
-        // }
-        get_today_number();
+        if(data.today_number){
+            today_number = data.today_number;
+        } else {
+            get_today_number();
+        }
+        // get_today_number();
         setInterval(()=>{
             console.log("i'am alive");
             socket.emit("i_am_alive", name);
         },10000)
-        socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
-            timeout : 50000
-        })
-        // socket = io("ws://192.168.50.31:3000/",{
+        // socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
         //     timeout : 50000
         // })
+        socket = io("ws://192.168.50.31:3000/",{
+            timeout : 50000
+        })
 
         socket.on("connect", () => {
             if (socket.recovered) {
