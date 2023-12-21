@@ -12,14 +12,14 @@ export async function load({ cookies, fetch }) {
     dayjs.extend(timezone);
     dayjs.tz.setDefault('Asia/Seoul');
     let standard = {
-        date : dayjs('2023-12-19T00:00:00'),
+        date : dayjs.tz('2023-12-19T00:00:00'),
         number : 627
     }
-    const standard_day = dayjs(standard.date).format("YYYY.MM.DD HH:mm");
-    console.log("🚀 ~ file: +page.server.js:19 ~ load ~ standard_day:", standard_day)
-    const now = dayjs().format("YYYY.MM.DD HH:mm:ss")
-    console.log("🚀 ~ file: +page.server.js:21 ~ load ~ now:", now)
-    const diff = dayjs().diff(dayjs(standard.date), "day");
+    const standard_day = dayjs.tz(standard.date);
+    console.log("🚀 ~ file: +page.server.js:19 ~ load ~ standard_day:", standard_day.format("YYYY.MM.DD HH:mm"))
+    const now = dayjs.tz();
+    console.log("🚀 ~ file: +page.server.js:21 ~ load ~ now:", now.format("YYYY.MM.DD HH:mm:ss"))
+    const diff = now.diff(standard_day, "day");
     console.log("🚀 ~ file: +page.server.js:23 ~ load ~ diff:", diff)
     let today_number = standard.number+diff;
     // const differenceInMilliseconds = new Date().getTime() - standard.date.getTime();
