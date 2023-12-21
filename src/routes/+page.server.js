@@ -12,7 +12,7 @@ export async function load({ cookies, fetch }) {
     dayjs.extend(timezone);
     dayjs.tz.setDefault('Asia/Seoul');
     let standard = {
-        date : new Date('2023-12-19T00:00:00'),
+        date : dayjs('2023-12-19T00:00:00'),
         number : 627
     }
     const standard_day = dayjs(standard.date).format("YYYY.MM.DD HH:mm");
