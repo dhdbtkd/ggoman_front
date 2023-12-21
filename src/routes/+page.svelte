@@ -64,6 +64,7 @@
         console.log(Math.floor(differenceInDays));
         const day_difference = Math.floor(differenceInDays);
         today_number = standard.number+day_difference;
+        console.log("🚀 ~ file: +page.svelte:67 ~ today_number:", today_number)
     }
     onMount(()=>{
         is_admin = $page.url.searchParams.get('admin')=='true'?true:false;

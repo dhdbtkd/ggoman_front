@@ -13,6 +13,7 @@ export async function load({ cookies, fetch }) {
     console.log(Math.floor(differenceInDays));
     const day_difference = Math.floor(differenceInDays);
     today_number = standard.number+day_difference;
+    console.log("🚀 ~ file: +page.server.js:16 ~ load ~ today_number:", today_number)
     const today_similarity = await fetch(`https://semantle-ko.newsjel.ly/similarity/${today_number}`)
     .then((res)=>{
         return res.json()
