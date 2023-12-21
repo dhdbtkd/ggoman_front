@@ -367,10 +367,43 @@
                 <div>
                     친구들과 {today_number}번째 꼬맨틀의 정답을 맞혀보세요🧐
                 </div>
+                
             </div>
         </div>
         
     </div>
+    {#if data.today_similarity}
+    <div class="text-xs text-zinc-300 mb-2">
+        <div>
+            오늘의 유사도
+        </div>
+        <div class="text-center grid grid-cols-3 gap-2">
+            <div class="text-center">
+                1위-
+                <span class="font-bold">
+                    {(data.today_similarity.top*100).toFixed(1)}
+                </span>
+            </div>
+            <div>
+                <span>
+                    10위-
+                </span>
+                <span class="font-bold">
+                    {(data.today_similarity.top10*100).toFixed(1)}
+                </span>
+            </div>
+            <div>
+                <span>
+                    1000위-
+                </span>
+                <span class="font-bold">
+                    {(data.today_similarity.rest*100).toFixed(1)}
+                </span>
+            </div>
+        </div>
+        
+    </div>
+    {/if}
     <div class="flex flex-col text-xs">
         <div class="mb-2">
             접속중인 친구
@@ -483,7 +516,7 @@
                     {current_guess.rank} 🥳
                 </span>
                 {:else}
-                    <!-- {#if current_guess.sim>data.today_similarity.rest}
+                    {#if current_guess.sim>data.today_similarity.rest}
                     <span class="text-zinc-400 text-xs">
                         ????
                     </span>
@@ -491,10 +524,7 @@
                     <span class="text-zinc-400 text-xs">
                         {current_guess.rank} 😭
                     </span>
-                    {/if} -->
-                    <span class="text-zinc-400 text-xs">
-                        {current_guess.rank} 😭
-                    </span>
+                    {/if}
                 {/if}
             </div>
         </div>
@@ -548,7 +578,7 @@
                     {guess.rank} 🥳
                 </span>
                 {:else}
-                    <!-- {#if guess.sim>data.today_similarity.rest}
+                    {#if guess.sim>data.today_similarity.rest}
                     <span class="text-zinc-400 text-xs">
                         ????
                     </span>
@@ -556,10 +586,7 @@
                     <span class="text-zinc-400 text-xs">
                         {guess.rank}
                     </span>
-                    {/if} -->
-                    <span class="text-zinc-400 text-xs">
-                        {guess.rank}
-                    </span>
+                    {/if}
                 {/if}
                 
                 
