@@ -288,7 +288,7 @@
     }
     const guess_text_dynamic_class = (rank)=>{
         let class_text;
-        if(rank > 500 && rank <1000){
+        if(rank > 500 && rank <1001){
             class_text = "grid grid-cols-5 gap-2";
         } else if(rank > 250 && rank <501){
             class_text = "grid grid-cols-5 gap-2";
@@ -454,7 +454,7 @@
                 {(current_guess.sim*100).toFixed(1)}
             </div>
             <div>
-                {#if current_guess.rank < 1000 && current_guess.rank > 500}
+                {#if current_guess.rank < 1001 && current_guess.rank > 500}
                 <span class="font-bold">
                     {current_guess.rank} 😏
                 </span>
@@ -519,7 +519,7 @@
                 {(guess.sim*100).toFixed(1)}
             </div>
             <div>
-                {#if guess.rank < 1000 && guess.rank > 500}
+                {#if guess.rank < 1001 && guess.rank > 500}
                 <span class="font-bold">
                     {guess.rank}
                 </span>
