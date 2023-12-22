@@ -79,7 +79,10 @@
             console.log("i'am alive");
             socket.emit("i_am_alive", name);
         },10000)
-        socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
+        // socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
+        //     timeout : 50000
+        // })
+        socket = io("wss://ggoman-back-yoosangoh.koyeb.app/",{
             timeout : 50000
         })
         // socket = io("ws://192.168.50.31:3000/",{
@@ -412,8 +415,14 @@
             {#each user_list as user,index(index)}
             <!-- {@debug user_list} -->
             {#if user.socket_id == socket.id}
-            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
+            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1 relative" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
                 it's me {user.name}
+                <!-- <div class="absolute -top-4 right-3 -translate-y-full">
+                    <div class="bubble bottom text-sm px-1 py-0.5 duration-300">
+                        진입로
+                    </div>
+                </div> -->
+                
             </div>
             
             {:else}
@@ -622,6 +631,29 @@
         50% {
             background-position: 100% 50%;
         }
+    }
+    .bubble {
+        position: relative;
+        display: inline-block;
+        text-align: center;
+        line-height: 1.3em;
+        background-color: #fff;
+        color: #000;
+        box-shadow: 0 -4px #fff, 0 -8px #000, 4px 0 #fff, 4px -4px #000, 8px 0 #000, 0 4px #fff, 0 8px #000, -4px 0 #fff, -4px 4px #000, -8px 0 #000, -4px -4px #000, 4px 4px #000;
+        box-sizing: border-box;
+    }
+    .bubble::after {
+        content: "";
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+    }
+    .bubble.bottom::after {
+        height: 3px;
+        width: 3px;
+        bottom: -6px;
+        left: 50%;
+        box-shadow: 0 4px #000, 0 8px #000, 0 12px #000, 0 16px #000, -4px 12px #000, -8px 8px #000, -12px 4px #000, -4px 4px #fff, -8px 4px #fff, -4px 8px #fff, -4px 0 #fff, -8px 0 #fff, -12px 0 #fff;
     }
     
 </style>
