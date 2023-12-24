@@ -98,12 +98,12 @@
         // socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
         //     timeout : 50000
         // })
-        // socket = io("wss://ggoman-back-yoosangoh.koyeb.app/",{
-        //     timeout : 50000
-        // })
-        socket = io("ws://192.168.50.31:3000/",{
+        socket = io("wss://ggoman-back-yoosangoh.koyeb.app/",{
             timeout : 50000
         })
+        // socket = io("ws://192.168.50.31:3000/",{
+        //     timeout : 50000
+        // })
 
         //localstorage에 option 있는지 확인
         const option_exist = check_options_exist();
@@ -313,6 +313,8 @@
         }
     }
     const set_options = (key, value)=>{
+        console.log("🚀 ~ file: +page.svelte:317 ~ value:", value)
+        console.log("🚀 ~ file: +page.svelte:317 ~ key:", key)
         let local_options = window.localStorage.getItem("options");
         local_options = JSON.parse(local_options);
         local_options.show[key] = value;
