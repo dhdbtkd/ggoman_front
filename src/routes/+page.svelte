@@ -320,7 +320,7 @@
         local_options.show[key] = value;
         const option_string = JSON.stringify(local_options);
         options = local_options;
-        window.localStorage.setItem('options', option_string);
+        // window.localStorage.setItem('options', option_string);
     }
     const set_options_debug = (key, value)=>{
         const options_2 = {
