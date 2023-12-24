@@ -115,7 +115,7 @@
             }
         } else {
             //옵션 없을 경우 처음으로 기본 값 설정
-            window.localStorage.setItem("options", JSON.stringify(options));
+            // window.localStorage.setItem("options", JSON.stringify(options));
         }
         socket.on("connect", () => {
             if (socket.recovered) {
@@ -479,7 +479,7 @@
                 </div>
                 <div class="text-zinc-400 text-[0.6rem]">
                     <div>
-                        기본적으로 정답, 250위까지 단어는 친구가 맞춰도 보이지 않아요.
+                        기본적으로 정답, 100위까지 단어는 친구가 맞춰도 보이지 않아요.
                     </div>
                     <div>
                         설정을 변경하려면 우측 상단 버튼을 눌러서 변경하세요.
