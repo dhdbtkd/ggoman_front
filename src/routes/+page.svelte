@@ -1,5 +1,7 @@
 <script>
-    import { io } from 'socket.io-client'
+    import { io } from 'socket.io-client';
+    import { scale,fly } from 'svelte/transition';
+    import { quintOut } from 'svelte/easing';
     import { onMount } from 'svelte';
     import _ from 'lodash';
     import Icon from '@iconify/svelte';
@@ -27,9 +29,24 @@
     let guess_input;
     let waiting = false;
     let invalid_text = false;
+    let dialog;
     let top_player = {
         socket_id : '',
         name : ''
+    }
+    let options = {
+        show : {
+            answer : false,
+            "50th" : false,
+            "100th" : false,
+            "250th" : false,
+            "500th" : true,
+            "1000th" : true,
+            "unknown" : false
+        }
+    }
+    $:{
+        console.log("🚀 ~ file: +page.svelte:50 ~ options:", options)
     }
     $: {
         user_list = [...user_list];
@@ -74,7 +91,6 @@
         } else {
             get_today_number();
         }
-        // get_today_number();
         setInterval(()=>{
             console.log("i'am alive");
             socket.emit("i_am_alive", name);
@@ -82,13 +98,25 @@
         // socket = io("wss://port-0-ggoman-back-koh2xlivr60m6.sel4.cloudtype.app",{
         //     timeout : 50000
         // })
-        socket = io("wss://ggoman-back-yoosangoh.koyeb.app/",{
-            timeout : 50000
-        })
-        // socket = io("ws://192.168.50.31:3000/",{
+        // socket = io("wss://ggoman-back-yoosangoh.koyeb.app/",{
         //     timeout : 50000
         // })
+        socket = io("ws://192.168.50.31:3000/",{
+            timeout : 50000
+        })
 
+        //localstorage에 option 있는지 확인
+        const option_exist = check_options_exist();
+        if(option_exist){
+            //localstorage에 옵션이 있을 경우 옵션 덮어쓰기
+            const localstorage_options = window.localStorage.getItem('options');
+            if(localstorage_options){
+                options = JSON.parse(localstorage_options);
+            }
+        } else {
+            //옵션 없을 경우 처음으로 기본 값 설정
+            window.localStorage.setItem("options", JSON.stringify(options));
+        }
         socket.on("connect", () => {
             if (socket.recovered) {
                 // any event missed during the disconnection period will be received now
@@ -276,6 +304,38 @@
             }
         }
     }
+    const check_options_exist = ()=>{
+        let options = window.localStorage.getItem("options");
+        if(options){
+            return true;
+        } else {
+            return false;
+        }
+    }
+    const set_options = (key, value)=>{
+        let local_options = window.localStorage.getItem("options");
+        local_options = JSON.parse(local_options);
+        local_options.show[key] = value;
+        const option_string = JSON.stringify(local_options);
+        options = local_options;
+        window.localStorage.setItem('options', option_string);
+    }
+    const set_options_debug = (key, value)=>{
+        const options_2 = {
+            show : {
+                answer : true,
+                "50th" : true,
+                "100th" : true,
+                "250th" : true,
+                "500th" : true,
+                "1000th" : true,
+                "unknown" : true
+            }
+        }
+        options = options_2;
+        // const option_string = JSON.stringify(options_2);
+        // window.localStorage.setItem('options', option_string);
+    }
     const reset_name = ()=>{
         step = 0;
         const remove_name = window.localStorage.getItem("name");
@@ -311,7 +371,16 @@
         
         return class_text;
     }
-
+    const toggle_modal = ()=>{
+        console.log("🚀 ~ file: +page.svelte:373 ~ dialog.open:", dialog.open)
+        if(dialog.open){
+            dialog.close();
+        } else {
+            dialog.inert = true;
+            dialog.showModal();
+            dialog.inert = false;
+        }
+    }
 </script>
 {#if step == 0}
 <div class="w-full h-[100dvh] flex flex-col justify-center items-center p-4 bg-zinc-900 text-zinc-100">
@@ -355,13 +424,49 @@
         RESET
     </div>
     {/if}
+    <div class="absolute top-3 right-3 bg-zinc-700 p-2 rounded-lg text-lg flex justify-center items-center" on:click={toggle_modal}>
+        <Icon icon="basil:unlock-solid" /> / <Icon icon="basil:lock-solid" />
+    </div>
+    <!-- options modal -->
+    <dialog transition:fly={{ duration: 300, y: 500, easing: quintOut }}
+        class="focus-visible:outline-0 w-full lg:w-3/5 h-1/2 lg:h-4/5 rounded-2xl shadow-lg ring-0 text-white lg:m-auto overflow-y-scroll bg-zinc-700"
+        bind:this={dialog}
+        on:pointerup|self={() => {toggle_modal()}}
+    >   
+        <div class="flex flex-col justify-start items-center m-4">
+            <div class="text-lg text-center my-5">
+                보기 설정
+            </div>
+            <div class="flex items-center flex-col">
+                
+                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["answer"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">정답 보기
+                </label>
+                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["50th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">1~50위 보기
+                </label>
+                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                    <input  type="checkbox" bind:checked={options.show["100th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">51~100위 보기
+                </label>
+                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["250th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">101~250위 보기
+                </label>
+                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["500th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">250~500위 보기
+                </label>
+                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["unknown"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">???? 보기
+                </label>
+            </div>
+        </div>
+    </dialog>
     <div class="flex flex-col justify-center items-center mb-6 mt-5">
         <div class="text-2xl font-bold mb-4">
             다함께 꼬맨틀
         </div>
         <div>
             <div class="text-xs">
-                <div class="mb-2">
+                <div class="mb-1">
                     안녕하세요 
                     <span class="font-bold">
                         {name}
@@ -370,13 +475,20 @@
                 <div>
                     친구들과 {today_number}번째 꼬맨틀의 정답을 맞혀보세요🧐
                 </div>
-                
+                <div class="text-zinc-400 text-[0.6rem]">
+                    <div>
+                        기본적으로 정답, 500위까지 단어는 친구가 맞춰도 보이지 않아요.
+                    </div>
+                    <div>
+                        설정을 변경하려면 우측 상단 버튼을 눌러서 변경하세요.
+                    </div>
+                </div>
             </div>
         </div>
         
     </div>
     {#if data.today_similarity}
-    <div class="text-xs text-zinc-300 mb-2">
+    <div class="text-xs text-zinc-300 mb-1">
         <div>
             오늘의 유사도
         </div>
@@ -408,7 +520,7 @@
     </div>
     {/if}
     <div class="flex flex-col text-xs">
-        <div class="mb-2">
+        <div class="mb-1">
             접속중인 친구
         </div>
         <div class="flex flex-wrap">
@@ -542,7 +654,7 @@
     <div class="text-sm overflow-y-scroll">
         {#each guess_list as guess, index (index)}
         <div class={guess_text_dynamic_class(guess.rank)}>
-            <div class="flex col-span-2">
+            <div class="flex col-span-2 items-center">
                 <div class="mr-2 w-5">
                     {guess.count}
                 </div>
@@ -551,13 +663,62 @@
                 </div>
 
             </div>
-            <div>
-                {guess.guess}
+            <div class="flex items-center">
+                {#if guess.rank < 1001 && guess.rank > 500}
+                    {#if options.show["1000th"] || guess.name == name}
+                        {guess.guess}
+                    {:else}
+                        <Icon class="text-lg" icon="mdi:lock" />
+                    {/if}
+                {:else if guess.rank < 501 && guess.rank > 250}
+                    {#if options.show["500th"] || guess.name == name}
+                        {guess.guess}
+                    {:else}
+                        <Icon class="text-lg" icon="mdi:lock" />
+                    {/if}
+                {:else if guess.rank < 251 && guess.rank > 100}
+                    {#if options.show["250th"] || guess.name == name}
+                        {guess.guess}
+                    {:else}
+                        <Icon class="text-lg" icon="mdi:lock" />
+                    {/if}
+                {:else if guess.rank < 101 && guess.rank > 50}
+                    {#if options.show["100th"] || guess.name == name}
+                        {guess.guess}
+                    {:else}
+                        <Icon class="text-lg" icon="mdi:lock" />
+                    {/if}
+                {:else if guess.rank < 51 && guess.rank > 0}
+                    {#if options.show["50th"] || guess.name == name}
+                        {guess.guess}
+                    {:else}
+                        <Icon class="text-lg" icon="mdi:lock" />
+                    {/if}
+                {:else if guess.rank.includes("정답")}
+                    {#if options.show["answer"] || guess.name == name}
+                        {guess.guess}
+                    {:else}
+                        <div on:click={()=>{set_options("answer", true)}}>
+                            <Icon class="text-lg" icon="mdi:lock" />
+
+                        </div>
+                    {/if}
+                {:else}
+                    {#if guess.sim>data.today_similarity.rest}
+                        {#if options.show["unknown"] || guess.name == name}
+                            {guess.guess}
+                        {:else}
+                            <Icon class="text-lg" icon="mdi:lock" />
+                        {/if}
+                    {:else}
+                        {guess.guess}
+                    {/if}
+                {/if}
             </div>
-            <div>
+            <div class="flex items-center">
                 {(guess.sim*100).toFixed(1)}
             </div>
-            <div>
+            <div class="flex items-center">
                 {#if guess.rank < 1001 && guess.rank > 500}
                 <span class="font-bold">
                     {guess.rank}
@@ -655,5 +816,7 @@
         left: 50%;
         box-shadow: 0 4px #000, 0 8px #000, 0 12px #000, 0 16px #000, -4px 12px #000, -8px 8px #000, -12px 4px #000, -4px 4px #fff, -8px 4px #fff, -4px 8px #fff, -4px 0 #fff, -8px 0 #fff, -12px 0 #fff;
     }
-    
+    dialog::backdrop {
+        backdrop-filter: blur(2px);
+    }
 </style>
