@@ -431,24 +431,57 @@
     </div>
     <!-- options modal -->
     <dialog transition:fly={{ duration: 300, y: 500, easing: quintOut }}
-        class="focus-visible:outline-0 w-full lg:w-3/5 h-1/2 lg:h-4/5 rounded-2xl shadow-lg ring-0 text-white lg:m-auto overflow-y-scroll bg-zinc-700"
+        class="focus-visible:outline-0 w-full lg:w-3/5 h-1/2 lg:h-4/5 rounded-2xl shadow-lg ring-0 text-white lg:m-auto overflow-y-scroll bg-zinc-900 border-2 border-zinc-400 "
         bind:this={dialog}
         on:pointerup|self={() => {toggle_modal()}}
     >   
-        <div class="flex flex-col justify-start items-center m-4">
-            <div class="text-lg text-center my-5">
-                보기 설정
+        <div class="flex flex-col justify-start m-4 relative flex-1">
+            <div class="absolute top-3 right-3 z-10" on:click={toggle_modal}>
+                <Icon class="text-lg" icon="mingcute:close-fill" />
             </div>
-            <div class="flex items-center flex-col">
+            <div class="text-lg text-left font-bold mt-5 mb-1 text-zinc-200">
+                설정
+            </div>
+            <div class="text-xs text-zinc-300 mb-3">
+                친구가 맞춘 단어를 몇 위까지 볼지 설정할 수 있어요.
+            </div>
+            <div class="flex items-start flex-col">
                 
-                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["answer"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">정답 보기
+                <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["answer"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
+                    정답 보기
                 </label>
-                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
+                <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["50th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
+                    1~50위 보기
+                </label>
+                <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["100th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
+                    51~100위 보기
+                </label>
+                <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["250th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
+                    101~250위 보기
+                </label>
+                <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["500th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
+                    250~500위 보기
+                </label>
+                <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
+                    <input type="checkbox" bind:checked={options.show["unknown"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
+                    ???? 보기
+                </label>
+                <!-- <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
                     <input type="checkbox" bind:checked={options.show["50th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">1~50위 보기
                 </label>
                 <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input  type="checkbox" bind:checked={options.show["100th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">51~100위 보기
+                    <input type="checkbox" bind:checked={options.show["100th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded  mr-2">51~100위 보기
                 </label>
                 <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
                     <input type="checkbox" bind:checked={options.show["250th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">101~250위 보기
@@ -458,16 +491,16 @@
                 </label>
                 <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
                     <input type="checkbox" bind:checked={options.show["unknown"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">???? 보기
-                </label>
+                </label> -->
             </div>
         </div>
     </dialog>
-    <div class="flex flex-col justify-center items-center mb-6 mt-5">
+    <div class="flex flex-col justify-center items-center mb-4 mt-5">
         <div class="text-2xl font-bold mb-4">
             다함께 꼬맨틀
         </div>
-        <div>
-            <div class="text-xs">
+        <div class="flex w-full">
+            <div class={data.today_similarity?"w-4/5 text-xs":"text-xs"}>
                 <div class="mb-1">
                     안녕하세요 
                     <span class="font-bold">
@@ -479,48 +512,49 @@
                 </div>
                 <div class="text-zinc-400 text-[0.6rem]">
                     <div>
-                        기본적으로 정답, 100위까지 단어는 친구가 맞춰도 보이지 않아요.
+                        정답, 100위까지 단어는 친구가 맞춰도 보이지 않아요.
                     </div>
                     <div>
                         설정을 변경하려면 우측 상단 버튼을 눌러서 변경하세요.
                     </div>
                 </div>
             </div>
+            {#if data.today_similarity}
+            <div class="text-xs text-zinc-300 mb-1 w-1/5">
+                <div>
+                    오늘의 유사도
+                </div>
+                <div class="text-left flex flex-col gap-1">
+                    <div>
+                        1위-
+                        <span class="font-bold">
+                            {(data.today_similarity.top*100).toFixed(1)}
+                        </span>
+                    </div>
+                    <div>
+                        <span>
+                            10위-
+                        </span>
+                        <span class="font-bold">
+                            {(data.today_similarity.top10*100).toFixed(1)}
+                        </span>
+                    </div>
+                    <div>
+                        <span>
+                            1000위-
+                        </span>
+                        <span class="font-bold">
+                            {(data.today_similarity.rest*100).toFixed(1)}
+                        </span>
+                    </div>
+                </div>
+                
+            </div>
+            {/if}
         </div>
         
     </div>
-    {#if data.today_similarity}
-    <div class="text-xs text-zinc-300 mb-1">
-        <div>
-            오늘의 유사도
-        </div>
-        <div class="text-center grid grid-cols-3 gap-2">
-            <div class="text-center">
-                1위-
-                <span class="font-bold">
-                    {(data.today_similarity.top*100).toFixed(1)}
-                </span>
-            </div>
-            <div>
-                <span>
-                    10위-
-                </span>
-                <span class="font-bold">
-                    {(data.today_similarity.top10*100).toFixed(1)}
-                </span>
-            </div>
-            <div>
-                <span>
-                    1000위-
-                </span>
-                <span class="font-bold">
-                    {(data.today_similarity.rest*100).toFixed(1)}
-                </span>
-            </div>
-        </div>
-        
-    </div>
-    {/if}
+    
     <div class="flex flex-col text-xs">
         <div class="mb-1">
             접속중인 친구
@@ -819,6 +853,7 @@
         box-shadow: 0 4px #000, 0 8px #000, 0 12px #000, 0 16px #000, -4px 12px #000, -8px 8px #000, -12px 4px #000, -4px 4px #fff, -8px 4px #fff, -4px 8px #fff, -4px 0 #fff, -8px 0 #fff, -12px 0 #fff;
     }
     dialog::backdrop {
-        backdrop-filter: blur(2px);
+        backdrop-filter: blur(3px);
+        background: #1414145c;
     }
 </style>
