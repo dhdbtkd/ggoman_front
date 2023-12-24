@@ -39,7 +39,7 @@
             answer : false,
             "50th" : false,
             "100th" : false,
-            "250th" : false,
+            "250th" : true,
             "500th" : true,
             "1000th" : true,
             "unknown" : false
@@ -479,7 +479,7 @@
                 </div>
                 <div class="text-zinc-400 text-[0.6rem]">
                     <div>
-                        기본적으로 정답, 500위까지 단어는 친구가 맞춰도 보이지 않아요.
+                        기본적으로 정답, 250위까지 단어는 친구가 맞춰도 보이지 않아요.
                     </div>
                     <div>
                         설정을 변경하려면 우측 상단 버튼을 눌러서 변경하세요.
