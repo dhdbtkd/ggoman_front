@@ -39,7 +39,7 @@
             answer : false,
             "50th" : false,
             "100th" : false,
-            "250th" : true,
+            "250th" : false,
             "500th" : true,
             "1000th" : true,
             "unknown" : false
@@ -197,16 +197,36 @@
             console.log("clear");
             guess_list = [];
         })
-        socket.on("guess_result_from_server",(arg)=>{
-            guess_list = [...guess_list, arg];
+        socket.on("guess_result_from_server",(guess)=>{
+            guess_list = [...guess_list, guess];
+            console.log("🚀 ~ file: +page.svelte:202 ~ socket.on ~ guess:", guess)
             sort_array(guess_list);
-            console.log("🚀 ~ file: +page.svelte:31 ~ socket.on ~ arg:", arg)
             find_top_player(guess_list, 'sim');
+            //전달 받은 guess로 말풍선 표시
+            const find_div = find_user_name_div(guess.name);
+            display_bubble(find_div, guess.guess);
         })
         socket.on("disconnect", (reason) => {
             console.log("🚀 ~ file: +page.svelte:143 ~ disconnect~ reason:", reason)
         });
     })
+    const find_user_name_div = (user_name) =>{
+        const user_list_div = document.querySelector(".user_list");
+        const find_elem = user_list_div.querySelector(`div[user_name='${user_name}']`);
+        return find_elem
+        
+    }
+    const display_bubble = (elem, text)=>{
+        elem.querySelector(".bubble_container").style.animationName = "expand-bounce";
+        elem.querySelector(".bubble_container").style.animationDuration  =" 0.25s";
+        
+        elem.querySelector(".bubble").innerHTML = text;
+        setTimeout(()=>{
+            elem.querySelector(".bubble_container").style.animationName = "shrink";
+            elem.querySelector(".bubble_container").style.animationDuration  =" 0.15s";
+        },2000)
+    }
+    //최고 기록이 누구인지 찾는다
     const find_top_player = (array, key) => {
         if (array.length === 0) {
             return null; 
@@ -285,8 +305,12 @@
                 guess_list = [...guess_list];
                 sort_array(guess_list);
                 socket.emit("guess_result_to_server", result);
+                
                 invalid_text = false;
                 find_top_player(guess_list, "sim");
+                //내 이름 위에 말풍선 표시
+                const find_div = find_user_name_div(name);
+                display_bubble(find_div, guess);
             } else {
                 //에러일 경우->알수없는 단어
                 invalid_text = true;
@@ -313,9 +337,8 @@
         }
     }
     const set_options = (key, value)=>{
-        console.log("🚀 ~ file: +page.svelte:317 ~ value:", value)
-        console.log("🚀 ~ file: +page.svelte:317 ~ key:", key)
         let local_options = window.localStorage.getItem("options");
+        if(!local_options) return;
         local_options = JSON.parse(local_options);
         local_options.show[key] = value;
         const option_string = JSON.stringify(local_options);
@@ -383,6 +406,11 @@
             dialog.inert = false;
         }
     }
+    const option_change = (e)=>{
+        const key = e.target.value;
+        const boolean = e.target.checked;
+        set_options(key, boolean);
+    }
 </script>
 {#if step == 0}
 <div class="w-full h-[100dvh] flex flex-col justify-center items-center p-4 bg-zinc-900 text-zinc-100">
@@ -448,50 +476,35 @@
             <div class="flex items-start flex-col">
                 
                 <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["answer"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <input type="checkbox" bind:checked={options.show["answer"]} on:input={option_change} value="answer" class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
                     <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
                     정답 보기
                 </label>
                 <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["50th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <input type="checkbox" bind:checked={options.show["50th"]} on:input={option_change} value="50th" class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
                     <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
                     1~50위 보기
                 </label>
                 <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["100th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <input type="checkbox" bind:checked={options.show["100th"]} on:input={option_change} value="100th" class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
                     <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
                     51~100위 보기
                 </label>
                 <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["250th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <input type="checkbox" bind:checked={options.show["250th"]} on:input={option_change} value="250th" class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
                     <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
                     101~250위 보기
                 </label>
                 <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["500th"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <input type="checkbox" bind:checked={options.show["500th"]} on:input={option_change} value="500th" class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
                     <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
-                    250~500위 보기
+                    251~500위 보기
                 </label>
                 <label class="relative inline-flex ms-2 text-sm font-medium text-white items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["unknown"]} class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
+                    <input type="checkbox" bind:checked={options.show["unknown"]} on:input={option_change} value="unknown" class="sr-only appearance-none peer w-4 h-4 text-blue-600 bg-zinc-600 border-gray-300 rounded  ">
                     <div class="w-11 h-6 bg-zinc-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-purple-600 mr-5"></div>
                     ???? 보기
                 </label>
-                <!-- <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["50th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">1~50위 보기
-                </label>
-                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["100th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded  mr-2">51~100위 보기
-                </label>
-                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["250th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">101~250위 보기
-                </label>
-                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["500th"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">250~500위 보기
-                </label>
-                <label class="ms-2 text-sm font-medium text-white flex items-center my-2">
-                    <input type="checkbox" bind:checked={options.show["unknown"]} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2">???? 보기
-                </label> -->
             </div>
         </div>
     </dialog>
@@ -512,7 +525,7 @@
                 </div>
                 <div class="text-zinc-400 text-[0.6rem]">
                     <div>
-                        정답, 100위까지 단어는 친구가 맞춰도 보이지 않아요.
+                        정답, 250위까지 단어는 친구가 맞춰도 보이지 않아요.
                     </div>
                     <div>
                         설정을 변경하려면 우측 상단 버튼을 눌러서 변경하세요.
@@ -559,23 +572,29 @@
         <div class="mb-1">
             접속중인 친구
         </div>
-        <div class="flex flex-wrap">
+        <div class="flex flex-wrap user_list">
             {#each user_list as user,index(index)}
             <!-- {@debug user_list} -->
             {#if user.socket_id == socket.id}
-            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1 relative" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
+            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1 relative" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name} user_name={user.name}>
                 it's me {user.name}
-                <!-- <div class="absolute -top-4 right-3 -translate-y-full">
+                <div class="bubble_container absolute right-3 max-w-full text-center text-[0.65rem]">
                     <div class="bubble bottom text-sm px-1 py-0.5 duration-300">
                         진입로
                     </div>
-                </div> -->
+                </div>
                 
             </div>
             
             {:else}
-            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-700 my-1" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}>
+            <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-700 my-1 relative" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}
+            user_name={user.name}>
                 {user.name}
+                <div class="bubble_container absolute right-3 max-w-full text-center text-[0.65rem]">
+                    <div class="bubble bottom text-sm px-1 py-0.5 duration-300">
+                        진입로
+                    </div>
+                </div>
             </div>
 
             {/if}
@@ -588,9 +607,24 @@
                 '{last_guess}'는 알 수 없는 단어래😒
             </div>
         {/if}
-        <input placeholder="단어를 입력하세요." bind:this={guess_input} type="text" on:keydown={keydown} bind:value={guess} class="block w-full p-3 border bg-zinc-800 border-zinc-600 text-sm rounded-lg =">
+        <div class="flex">
+            <input placeholder="단어를 입력하세요." bind:this={guess_input} type="text" on:keydown={keydown} bind:value={guess} class="block w-2/3 p-3 border-t border-l border-b bg-zinc-800 border-zinc-600 text-sm rounded-tl-lg rounded-bl-lg focus:border-none">
+            <button on:click={submit_guess} class={waiting?"flex w-1/3 justify-center items-center bg-zinc-800 text-zinc-300 rounded-tr-lg rounded-br-lg ":"flex justify-center items-center  rounded-tr-lg bg-zinc-800 border-r border-t border-b border-zinc-600 rounded-br-lg w-1/3 "} disabled={waiting}>
+                <div class="m-1.5 bg-zinc-600 flex px-1 py-2.5 rounded-lg items-center justify-center w-full">
+                    {#if waiting}
+                    <svg  aria-hidden="true" class="mr-2 w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                    </svg>
+                    전송중
+                    {:else}
+                    <Icon class="text-lg mr-2" icon="grommet-icons:send" /> 제출
+                    {/if}
+                </div>
+            </button>
+        </div>
     </div>
-    <div class="mb-6">
+    <!-- <div class="mb-6">
         <button on:click={submit_guess} class={waiting?"flex justify-center items-center bg-zinc-800 text-zinc-300 rounded-lg w-full py-3":"flex justify-center items-center bg-zinc-600 rounded-lg w-full py-3"} disabled={waiting}>
             {#if waiting}
             <svg  aria-hidden="true" class="mr-2 w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -602,7 +636,7 @@
             <Icon class="text-lg mr-2" icon="grommet-icons:send" /> 제출
             {/if}
         </button>
-    </div>
+    </div> -->
     <div>
         
     </div>
@@ -734,9 +768,10 @@
                     {#if options.show["answer"] || guess.name == name}
                         {guess.guess}
                     {:else}
-                        <div on:click={()=>{set_options("answer", true)}}>
+                        <div on:click={()=>{
+                            // set_options("answer", true);
+                            }}>
                             <Icon class="text-lg" icon="mdi:lock" />
-
                         </div>
                     {/if}
                 {:else}
@@ -821,7 +856,7 @@
         background-clip: padding-box, border-box;
         border-radius: 1.8em;
         background-size: 200% 100%;
-        animation: moveGradient 4s alternate infinite;
+        animation: moveGradient 3s alternate infinite;
     }
 
     @keyframes moveGradient {
@@ -829,11 +864,16 @@
             background-position: 100% 50%;
         }
     }
+    .bubble_container {
+        transform: scale(0);
+        top: -200%;
+        animation-fill-mode: forwards;
+    }
     .bubble {
         position: relative;
         display: inline-block;
         text-align: center;
-        line-height: 1.3em;
+        line-height: 1.0em;
         background-color: #fff;
         color: #000;
         box-shadow: 0 -4px #fff, 0 -8px #000, 4px 0 #fff, 4px -4px #000, 8px 0 #000, 0 4px #fff, 0 8px #000, -4px 0 #fff, -4px 4px #000, -8px 0 #000, -4px -4px #000, 4px 4px #000;
@@ -851,6 +891,25 @@
         bottom: -6px;
         left: 50%;
         box-shadow: 0 4px #000, 0 8px #000, 0 12px #000, 0 16px #000, -4px 12px #000, -8px 8px #000, -12px 4px #000, -4px 4px #fff, -8px 4px #fff, -4px 8px #fff, -4px 0 #fff, -8px 0 #fff, -12px 0 #fff;
+    }
+    @keyframes -global-expand-bounce {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.25);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    @keyframes -global-shrink {
+        0% {
+            transform: scale(1);
+        }
+        100% {
+            transform: scale(0);
+        }
     }
     dialog::backdrop {
         backdrop-filter: blur(3px);
