@@ -204,7 +204,7 @@
             find_top_player(guess_list, 'sim');
             //전달 받은 guess로 말풍선 표시
             const find_div = find_user_name_div(guess.name);
-            display_bubble(find_div, guess.guess);
+            display_bubble(find_div, guess);
         })
         socket.on("disconnect", (reason) => {
             console.log("🚀 ~ file: +page.svelte:143 ~ disconnect~ reason:", reason)
@@ -216,15 +216,80 @@
         return find_elem
         
     }
-    const display_bubble = (elem, text)=>{
+    const display_bubble = (elem, guess, is_self = false)=>{
         elem.querySelector(".bubble_container").style.animationName = "expand-bounce";
         elem.querySelector(".bubble_container").style.animationDuration  =" 0.25s";
         
-        elem.querySelector(".bubble").innerHTML = text;
+        
         setTimeout(()=>{
             elem.querySelector(".bubble_container").style.animationName = "shrink";
             elem.querySelector(".bubble_container").style.animationDuration  =" 0.15s";
         },2000)
+        if(is_self){
+            elem.querySelector(".bubble").innerHTML = guess.guess;
+            return 
+        }
+        const is_lock = is_lock_guess(guess);
+        if(is_lock){
+            elem.querySelector(".bubble").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="0.8rem" width="0.8rem" viewBox="0 0 448 512"><path d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
+        } else {
+            elem.querySelector(".bubble").innerHTML = guess.guess;
+        }
+    }
+    const is_lock_guess = (guess)=>{
+        if(guess.rank < 1001 && guess.rank >500){
+            if(options.show["1000th"]){
+                return false;
+            } else {
+                return true;
+            }
+            
+        } else if(guess.rank < 501 && guess.rank >250){
+            if(options.show["500th"]){
+                return false;
+            } else {
+                return true;
+            }
+        } else if(guess.rank < 251 && guess.rank >100){
+            if(options.show["250th"]){
+                return false;
+            } else {
+                return true;
+            }
+        }
+        else if(guess.rank < 101 && guess.rank >50){
+            if(options.show["100th"]){
+                return false;
+            } else {
+                return true;
+            }
+        }
+        else if(guess.rank < 51 && guess.rank >0){
+            if(options.show["50th"]){
+                return false;
+            } else {
+                return true;
+            }
+        }
+        else if(guess.rank.includes("정답")){
+            if(options.show["answer"]){
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if(guess.sim>data.today_similarity.rest){
+                //??? 일 경우
+                if(options.show["unknown"]){
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+        
     }
     //최고 기록이 누구인지 찾는다
     const find_top_player = (array, key) => {
@@ -310,7 +375,7 @@
                 find_top_player(guess_list, "sim");
                 //내 이름 위에 말풍선 표시
                 const find_div = find_user_name_div(name);
-                display_bubble(find_div, guess);
+                display_bubble(find_div, result, true);
             } else {
                 //에러일 경우->알수없는 단어
                 invalid_text = true;
@@ -450,7 +515,7 @@
         </div>
     </div>
     {#if is_admin}
-    <div class="absolute top-3 right-3 bg-zinc-700 p-2 rounded-lg text-xs flex justify-center items-center" on:click={reset_history}>
+    <div class="absolute top-20 right-3 bg-zinc-700 p-2 rounded-lg text-xs flex justify-center items-center" on:click={reset_history}>
         RESET
     </div>
     {/if}
