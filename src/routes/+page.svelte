@@ -193,16 +193,33 @@
             add_user(user_object);
             user_list = [...user_list];
         })
+        //서버로부터 guess list 초기화 명령 받음
         socket.on("clear",()=>{
             console.log("clear");
             guess_list = [];
         })
+        //서버로부터 다른 유저의 plain text 받음
+        socket.on("plain_text_from_server", (plain)=>{
+            //전달 받은 guess로 말풍선 표시
+            console.log("🚀 ~ file: +page.svelte:205 ~ socket.on ~ plain:", plain)
+            const find_user = find_user_from_userlist(plain.name);
+            const find_div = find_user_name_div(plain.name);
+            console.log("🚀 ~ file: +page.svelte:206 ~ socket.on ~ find_div:", find_div)
+            display_bubble(find_div, plain);
+        })
+        //서버로부터 다른 유저의 guess 결과 받음
         socket.on("guess_result_from_server",(guess)=>{
             guess_list = [...guess_list, guess];
             console.log("🚀 ~ file: +page.svelte:202 ~ socket.on ~ guess:", guess)
             sort_array(guess_list);
             find_top_player(guess_list, 'sim');
             //전달 받은 guess로 말풍선 표시
+            const find_user = find_user_from_userlist(guess.name);
+            if(find_user){
+                find_user.last_guess = guess;
+            } else {
+
+            }
             const find_div = find_user_name_div(guess.name);
             display_bubble(find_div, guess);
         })
@@ -210,31 +227,43 @@
             console.log("🚀 ~ file: +page.svelte:143 ~ disconnect~ reason:", reason)
         });
     })
+    const find_user_from_userlist = (user_name)=>{
+        let find_user = user_list.find((user)=>{
+            return user.name == user_name
+        })
+        return find_user;
+    }
     const find_user_name_div = (user_name) =>{
         const user_list_div = document.querySelector(".user_list");
         const find_elem = user_list_div.querySelector(`div[user_name='${user_name}']`);
         return find_elem
-        
     }
     const display_bubble = (elem, guess, is_self = false)=>{
         elem.querySelector(".bubble_container").style.animationName = "expand-bounce";
         elem.querySelector(".bubble_container").style.animationDuration  =" 0.25s";
+        elem.querySelector(".bubble").style.boxShadow = "red";
+        elem.querySelector(".bubble.bottom").style.boxShadow = "red";
         
         
         setTimeout(()=>{
             elem.querySelector(".bubble_container").style.animationName = "shrink";
             elem.querySelector(".bubble_container").style.animationDuration  =" 0.15s";
         },2000)
-        if(is_self){
-            elem.querySelector(".bubble").innerHTML = guess.guess;
-            return 
+        if(guess.guess){
+            if(is_self){
+                elem.querySelector(".bubble").innerHTML = guess.guess;
+                return 
+            }
+            const is_lock = is_lock_guess(guess);
+            if(is_lock){
+                elem.querySelector(".bubble").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="0.8rem" width="0.8rem" viewBox="0 0 448 512"><path d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
+            } else {
+                elem.querySelector(".bubble").innerHTML = guess.guess;
+            }
+        } else if(guess.text){
+            elem.querySelector(".bubble").innerHTML = guess.text;
         }
-        const is_lock = is_lock_guess(guess);
-        if(is_lock){
-            elem.querySelector(".bubble").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="0.8rem" width="0.8rem" viewBox="0 0 448 512"><path d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
-        } else {
-            elem.querySelector(".bubble").innerHTML = guess.guess;
-        }
+        
     }
     const is_lock_guess = (guess)=>{
         if(guess.rank < 1001 && guess.rank >500){
@@ -379,6 +408,11 @@
             } else {
                 //에러일 경우->알수없는 단어
                 invalid_text = true;
+                const plain_text = {
+                    name : name,
+                    text : guess
+                }
+                socket.emit("plain_text_to_server", plain_text);
             }
         };
         guess = '';
@@ -643,7 +677,7 @@
             {#if user.socket_id == socket.id}
             <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-500 my-1 relative" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name} user_name={user.name}>
                 it's me {user.name}
-                <div class="bubble_container absolute right-3 max-w-full text-center text-[0.65rem]">
+                <div class="bubble_container absolute max-w-[110%] text-center text-[0.65rem]">
                     <div class="bubble bottom text-sm px-1 py-0.5 duration-300">
                         진입로
                     </div>
@@ -655,7 +689,7 @@
             <div class="flex items-center justify-center rounded-full text-xs px-3 py-1 mx-1 bg-zinc-700 my-1 relative" class:crowned-text={top_player.socket_id == user.socket_id || top_player.name == user.name}
             user_name={user.name}>
                 {user.name}
-                <div class="bubble_container absolute right-3 max-w-full text-center text-[0.65rem]">
+                <div class="bubble_container absolute max-w-[110%] text-center text-[0.65rem]">
                     <div class="bubble bottom text-sm px-1 py-0.5 duration-300">
                         진입로
                     </div>
@@ -931,7 +965,7 @@
     }
     .bubble_container {
         transform: scale(0);
-        top: -200%;
+        bottom : 45px;
         animation-fill-mode: forwards;
     }
     .bubble {
