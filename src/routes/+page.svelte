@@ -413,6 +413,9 @@
                     text : guess
                 }
                 socket.emit("plain_text_to_server", plain_text);
+                //내 이름 위에 말풍선 표시
+                const find_div = find_user_name_div(name);
+                display_bubble(find_div, plain_text, true);
             }
         };
         guess = '';
