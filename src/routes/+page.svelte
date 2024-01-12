@@ -244,7 +244,6 @@
         elem.querySelector(".bubble").style.boxShadow = "red";
         elem.querySelector(".bubble.bottom").style.boxShadow = "red";
         
-        
         setTimeout(()=>{
             elem.querySelector(".bubble_container").style.animationName = "shrink";
             elem.querySelector(".bubble_container").style.animationDuration  =" 0.15s";
