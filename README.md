@@ -1,38 +1,11 @@
-# create-svelte
+# 다함께 꼬맨틀
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+매일 혼자하던 [꼬맨틀](https://semantle-ko.newsjel.ly/)을 친구들과 함께 즐겨보세요
 
-## Creating a project
+순위에 따라 1등은 왕관을 씌워드려요
 
-If you're seeing this, you've probably already done this step. Congrats!
+![스크린샷 2024-03-19 114610](https://github.com/dhdbtkd/ggoman_front/assets/37060597/d50a964b-9168-42a3-8c43-7ec433ed0ec7)
+![스크린샷 2024-03-19 115159](https://github.com/dhdbtkd/ggoman_front/assets/37060597/992b0b15-d89f-47ce-94a7-69fa4cfa4e62)
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+[Site](https://ggoman-front.vercel.app/)
